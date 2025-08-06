@@ -142,9 +142,13 @@ export default function App() {
       styleTag.id = "custom-style";
       document.head.appendChild(styleTag);
     }
-    styleTag.innerHTML = customCSS
-      ? `#custom-css-container { ${customCSS} }`
-      : "";
+    
+    if (customCSS) {
+      // Apply custom CSS to the root element so it can override CSS variables
+      styleTag.innerHTML = `:root { ${customCSS} }`;
+    } else {
+      styleTag.innerHTML = "";
+    }
   }, [customCSS]);
 
   // Save/load points, todos, dark mode
@@ -160,30 +164,37 @@ export default function App() {
 
   useEffect(() => {
     const root = document.documentElement;
-    Object.entries(defaultVars).forEach(([key, val]) => {
-      root.style.setProperty(key, val);
-    });
-
-    if (darkMode) {
-      root.style.setProperty("--bg-color", "#0d1117");
-      root.style.setProperty("--text-color", turquoise);
-      root.style.setProperty("--secondary-text", "#8b949e");
-      root.style.setProperty("--input-bg", "#161b22");
-      root.style.setProperty("--input-color", turquoise);
-      root.style.setProperty("--button-bg", turquoise);
-      root.style.setProperty("--button-hover-bg", "#32cfc9");
-      root.style.setProperty("--glow-color", turquoise);
-    } else {
-      root.style.setProperty("--bg-color", "#f5f5f7");
-      root.style.setProperty("--text-color", "#222222");
-      root.style.setProperty("--secondary-text", "#555555");
-      root.style.setProperty("--input-bg", "#ffffff");
-      root.style.setProperty("--input-color", "#222222");
-      root.style.setProperty("--button-bg", "#40e0d0");
-      root.style.setProperty("--button-hover-bg", "#32cfc9");
-      root.style.setProperty("--glow-color", "#40e0d0");
+    
+    // Only set default variables if no custom CSS is present
+    if (!customCSS) {
+      Object.entries(defaultVars).forEach(([key, val]) => {
+        root.style.setProperty(key, val);
+      });
     }
-  }, [darkMode]);
+
+    // Only apply theme changes if no custom CSS is present
+    if (!customCSS) {
+      if (darkMode) {
+        root.style.setProperty("--bg-color", "#0d1117");
+        root.style.setProperty("--text-color", turquoise);
+        root.style.setProperty("--secondary-text", "#8b949e");
+        root.style.setProperty("--input-bg", "#161b22");
+        root.style.setProperty("--input-color", turquoise);
+        root.style.setProperty("--button-bg", turquoise);
+        root.style.setProperty("--button-hover-bg", "#32cfc9");
+        root.style.setProperty("--glow-color", turquoise);
+      } else {
+        root.style.setProperty("--bg-color", "#f5f5f7");
+        root.style.setProperty("--text-color", "#222222");
+        root.style.setProperty("--secondary-text", "#555555");
+        root.style.setProperty("--input-bg", "#ffffff");
+        root.style.setProperty("--input-color", "#222222");
+        root.style.setProperty("--button-bg", "#40e0d0");
+        root.style.setProperty("--button-hover-bg", "#32cfc9");
+        root.style.setProperty("--glow-color", "#40e0d0");
+      }
+    }
+  }, [darkMode, customCSS]);
 
   useEffect(() => {
     if (glowingId === null) return;
@@ -388,7 +399,7 @@ export default function App() {
           id="custom-css"
           value={customCSS}
           onChange={(e) => handleCSSChange(e.target.value)}
-          placeholder="e.g., body { background-color: #123456; } .task { font-style: italic; }"
+          placeholder="e.g., --bg-color: #123456; --text-color: #ffffff; --button-bg: #ff0000;"
           rows={6}
           style={{
             width: "100%",
